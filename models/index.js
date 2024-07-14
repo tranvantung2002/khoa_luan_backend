@@ -3,10 +3,9 @@ import User from "./user.js";
 import Role from "./role.js";
 import UserRole from "./user_role.js";
 import Profile from "./profile.js";
+import Company from "./company.js";
 
-// Thiết lập mối quan hệ nhiều-nhiều
-User.belongsToMany(Role, { through: UserRole, foreignKey: "user_id" });
-Role.belongsToMany(User, { through: UserRole, foreignKey: "role_id" });
+
 
 User.hasOne(Profile, {
   foreignKey: "user_id",
@@ -29,4 +28,4 @@ const initializeModels = async () => {
 
 initializeModels();
 
-export { User, Role, UserRole, Profile };
+export { User, Role, UserRole, Profile,Company };

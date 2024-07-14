@@ -30,5 +30,8 @@ const UserRole = sequelize.define(
     updatedAt: "modify_time",
   }
 );
+// Thiết lập mối quan hệ nhiều-nhiều
+User.belongsToMany(Role, { through: UserRole, foreignKey: "user_id" });
+Role.belongsToMany(User, { through: UserRole, foreignKey: "role_id" });
 
 export default UserRole;

@@ -32,7 +32,6 @@ const Profile = sequelize.define('Profile', {
   },
   phone: {
     type: DataTypes.STRING(20),
-    unique: true,
     allowNull: false,
   },
   profile_url: {
@@ -47,5 +46,6 @@ const Profile = sequelize.define('Profile', {
     updatedAt: 'modify_time',
     timestamps: true,
 });
+
 
 export default Profile;
