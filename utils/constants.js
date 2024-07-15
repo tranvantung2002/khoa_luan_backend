@@ -1,9 +1,9 @@
 class Constants {
   static get TIMES() {
     return {
-      EXPIRE_ACCESS_TOKEN : "10d",
-      EXPIRE_REFRESH_TOKEN: "15d"
-    }
+      EXPIRE_ACCESS_TOKEN: "10d",
+      EXPIRE_REFRESH_TOKEN: "15d",
+    };
   }
   static get ROLES() {
     return {
@@ -13,6 +13,13 @@ class Constants {
     };
   }
   static get STATUS_COMPANY() {
+    return {
+      PENDING: "pending",
+      ACCEPT: "accepted",
+      REJECT: "rejected",
+    };
+  }
+  static get STATUS_JOB_APPLICATION() {
     return {
       PENDING: "pending",
       ACCEPT: "accepted",
@@ -43,8 +50,19 @@ class Constants {
       DELETE_COMPANY_ERROR: "Could not delete company",
       DATA_NOT_FOUND: "Could not find data",
       CREATE_LOCATION_ERROR: "Could not create location",
-      UPDATE_LOCATION_ERROR: "Could not delete location",
-      DELETE_LOCATION_ERROR: "Could not delete location"
+      UPDATE_LOCATION_ERROR: "Could not update location",
+      DELETE_LOCATION_ERROR: "Could not delete location",
+      GET_LOCATION_ERROR: "Could not get location",
+      GET_INDUSTRY_ERROR: "Could not get industry",
+      CREATE_INDUSTRY_ERROR: "Could not create industry",
+      UPDATE_INDUSTRY_ERROR: "Could not update industry",
+      DELETE_INDUSTRY_ERROR: "Could not delete industry",
+      GET_JOB_ERROR: "Could not get job",
+      CREATE_JOB_ERROR: "Could not create job",
+      UPDATE_JOB_ERROR: "Could not update job",
+      DELETE_JOB_ERROR: "Could not delete job",
+      APPLY_JOB_BEFORE_ERROR: "You have already applied for this job.",
+      APPLY_JOB_ERROR: "Could not apply job"
     };
   }
 
@@ -57,7 +75,8 @@ class Constants {
       UNAUTHORIZED_ERROR: 401,
       NO_CONTENT: 204,
       FORBIDDEN_ERROR: 403,
-      NOT_FOUND: 404
+      NOT_FOUND: 404,
+      BAD_REQUEST: 400,
     };
   }
 }

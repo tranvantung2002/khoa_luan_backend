@@ -14,6 +14,10 @@ const Location = sequelize.define('Location', {
   },
   image_url: {
     type: DataTypes.STRING(255)
+  },
+  code: {
+    type: DataTypes.STRING(255),
+    unique: true
   }
 }, {
   tableName: 'locations',
