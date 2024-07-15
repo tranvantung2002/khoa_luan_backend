@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from '../config/db.js';
+import Constants from "../utils/constants.js";
 
 const User = sequelize.define(
   "User",
@@ -9,18 +10,21 @@ const User = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
-    username: {
+    user_name: {
       type: DataTypes.STRING(50),
       allowNull: false,
     },
     email: {
       type: DataTypes.STRING(100),
-      unique: true,
       allowNull: false,
     },
     password: {
       type: DataTypes.STRING(255),
       allowNull: false,
+    },
+    role: {
+      type: DataTypes.ENUM(Constants.ROLES.USER, Constants.ROLES.RECRUITER, Constants.ROLES.ADMIN),
+      defaultValue: Constants.ROLES.USER,
     },
     refresh_token: {
         type: DataTypes.STRING,
