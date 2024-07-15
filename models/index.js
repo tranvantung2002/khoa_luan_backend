@@ -8,6 +8,7 @@ import CompanyUser from './company_user.js'
 import Location from "./location.js";
 import Industry from "./industry.js";
 import Job from "./job.js";
+import JobApplication from "./job_application.js";
 
 
 
@@ -32,4 +33,4 @@ const initializeModels = async () => {
 
 initializeModels();
 
-export { User, Role, UserRole, Profile,Company,CompanyUser, Location, Job, Industry };
+export { User, Role, UserRole, Profile,Company,CompanyUser, Location, Job, Industry,JobApplication };

@@ -14,7 +14,7 @@ export function authentication(req, res, next) {
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decoded) => {
       if (err) {
-        req.user = {};
+        // req.user = {};
         return next();
       }
       try {
@@ -23,9 +23,10 @@ export function authentication(req, res, next) {
         });
         if (user) {
           req.user = user.get({ plain: true });
-        } else {
-          req.user = {};
-        }
+        } 
+        // else {
+        //   req.user = {};
+        // }
 
         return next();
       } catch (error) {
@@ -36,7 +37,7 @@ export function authentication(req, res, next) {
       }
     });
   } else {
-    req.user = {};
+    // req.user = {};
     return next();
   }
 }

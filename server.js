@@ -8,6 +8,9 @@ import cookieParser  from 'cookie-parser';
 import routerAuth from "./routers/auth.js";
 import routerCompany from "./routers/company.js";
 import routerLocation from "./routers/location.js"
+import routerIndustry from "./routers/industry_router.js"
+import routerJob from "./routers/job_router.js"
+
 import { authentication } from "./middleware/auth.js";
 import bodyParser from "body-parser";
 dotenv.config();
@@ -32,6 +35,10 @@ app.use(authentication)
 app.use("/api/auth", routerAuth);
 app.use("/api/company", routerCompany);
 app.use("/api/location", routerLocation);
+app.use("/api/industry", routerIndustry)
+app.use("/api/job", routerJob);
+
+
 
 const PORT = process.env.PORT || 8080;
 
