@@ -5,9 +5,11 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import sequelize from "./config/db.js";
 import cookieParser  from 'cookie-parser';
-// const mySqlPool = require("./config/db")
 import routerAuth from "./routers/auth.js";
+import routerCompany from "./routers/company.js";
+import routerLocation from "./routers/location.js"
 import { authentication } from "./middleware/auth.js";
+import bodyParser from "body-parser";
 dotenv.config();
 
 const app = express();
@@ -15,6 +17,7 @@ const app = express();
 // middlewares
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(cookieParser());
 
 // routes
@@ -22,11 +25,17 @@ app.get("/test", (req, res) => {
   res.status(200).send("<h1> Node js my sql</h1>");
 });
 
-app.use("/api/auth", routerAuth);
-app.use(authentication)
-const PORT = process.env.PORT || 8080;
-// MY SQL
 
+app.use(authentication)
+
+// ROUTER
+app.use("/api/auth", routerAuth);
+app.use("/api/company", routerCompany);
+app.use("/api/location", routerLocation);
+
+const PORT = process.env.PORT || 8080;
+
+// MY SQL
 sequelize
   .authenticate()
   .then(() => {

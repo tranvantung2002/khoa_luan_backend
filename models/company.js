@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
+import Constants from "../utils/constants.js";
 
 const Company = sequelize.define(
   "Company",
@@ -26,8 +27,8 @@ const Company = sequelize.define(
       type: DataTypes.STRING(100),
     },
     status: {
-      type: DataTypes.ENUM("pending", "accepted", "rejected"),
-      defaultValue: "pending",
+      type: DataTypes.ENUM(Constants.STATUS_COMPANY.ACCEPT, Constants.STATUS_COMPANY.PENDING, Constants.STATUS_COMPANY.REJECT),
+      defaultValue: Constants.STATUS_COMPANY.PENDING,
     },
     code_tax: {
       type: DataTypes.STRING(255),

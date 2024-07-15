@@ -1,4 +1,11 @@
-import { Role, UserRole, User, Profile, Company } from "../models/index.js";
+import {
+  Role,
+  UserRole,
+  User,
+  Profile,
+  Company,
+  CompanyUser,
+} from "../models/index.js";
 import bcrypt from "bcrypt";
 import Constants from "../utils/constants.js";
 import jwt from "jsonwebtoken";
@@ -23,15 +30,6 @@ export async function registerAdmin(req, res) {
       });
     }
 
-    // Kiểm tra và tạo role admin nếu chưa tồn tại
-    let adminRole = await Role.findOne({
-      where: { role_name: Constants.ROLES.ADMIN },
-    });
-
-    if (!adminRole) {
-      adminRole = await Role.create({ role_name: Constants.ROLES.ADMIN });
-    }
-
     // Mã hóa mật khẩu
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -40,13 +38,9 @@ export async function registerAdmin(req, res) {
       email,
       password: hashedPassword,
       user_name,
+      role: Constants.ROLES.ADMIN,
     });
 
-    // Gán vai trò cho người dùng
-    await UserRole.create({
-      user_id: user.id,
-      role_id: adminRole.id,
-    });
     const profile = await Profile.create({
       user_id: user.id,
       user_name,
@@ -66,14 +60,22 @@ export async function registerAdmin(req, res) {
 }
 
 export async function login(req, res) {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
   try {
-    if (!email || !password)
+    if (!email || !password || !role)
       return res
         .status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY)
         .json({ status: 0, message: Constants.MESSAGES.INVALID_FIELDS });
-
-    const user = await User.findOne({ email });
+    if (
+      role != Constants.ROLES.ADMIN &&
+      role != Constants.ROLES.RECRUITER &&
+      role != Constants.ROLES.USER
+    ) {
+      return res
+        .status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY)
+        .json({ status: 0, message: Constants.MESSAGES.INVALID_FIELDS });
+    }
+    const user = await User.findOne({ where: { email: email, role: role } });
 
     if (!user)
       return res
@@ -93,7 +95,7 @@ export async function login(req, res) {
       },
       process.env.ACCESS_TOKEN_SECRET,
       {
-        expiresIn: "1800s",
+        expiresIn: Constants.TIMES.EXPIRE_ACCESS_TOKEN,
       }
     );
 
@@ -103,7 +105,7 @@ export async function login(req, res) {
       },
       process.env.REFRESH_TOKEN_SECRET,
       {
-        expiresIn: "2d",
+        expiresIn: Constants.TIMES.EXPIRE_REFRESH_TOKEN,
       }
     );
 
@@ -113,6 +115,7 @@ export async function login(req, res) {
 
     // Remove the password field
     delete userJson.password;
+    delete userJson.refresh_token;
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       sameSite: "None",
@@ -122,7 +125,10 @@ export async function login(req, res) {
     res.json({
       status: 0,
       message: Constants.MESSAGES.SUCCESS,
-      data: userJson,
+      data: {
+        accessToken: accessToken,
+        user: userJson,
+      },
     });
   } catch (e) {
     console.error(Constants.MESSAGES.LOGIN_ERROR, e);
@@ -133,66 +139,56 @@ export async function login(req, res) {
 }
 
 export async function register(req, res) {
-  const { email, user_name, password, phone, role, address_company, name_company } = req.body;
+  const {
+    email,
+    user_name,
+    password,
+    phone,
+    role,
+    address_company,
+    name_company,
+  } = req.body;
 
+  var roleUser = Constants.ROLES.USER;
   if (!email || !password || !user_name || !phone) {
     return res.status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY).json({
       status: 0,
       message: Constants.MESSAGES.INVALID_FIELDS,
     });
   }
+  if (role == Constants.ROLES.RECRUITER) {
+    if (!address_company || !name_company) {
+      return res.status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY).json({
+        status: 0,
+        message: Constants.MESSAGES.INVALID_FIELDS,
+      });
+    }
+    roleUser = Constants.ROLES.RECRUITER;
+  }
 
   try {
     // Kiểm tra xem người dùng đã tồn tại chưa
-    const emailExists = await User.findOne({ where: { email } });
+
+    const emailExists = await User.findOne({
+      where: { email: email, role: roleUser },
+    });
     if (emailExists) {
       return res.status(409).json({
         status: Constants.STATUS_CODES.CONFLICT,
         message: Constants.MESSAGES.USER_EXISTS,
       });
     }
-    let roleUser;
-    if (role == Constants.ROLES.RECRUITER) {
-      if (!address_company || !name_company ) {
-        return res.status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY).json({
-          status: 0,
-          message: Constants.MESSAGES.INVALID_FIELDS,
-        });
-      }
-      roleUser = await Role.findOne({
-        where: { role_name: Constants.ROLES.RECRUITER },
-      });
-      if (!roleUser) {
-        roleUser = await Role.create({ role_name: Constants.ROLES.RECRUITER });
-      }
-      const company = await Company.create({
-        address: address_company,
-        phone: phone,
-        name: name_company
-      })
-    } else {
-      roleUser = await Role.findOne({
-        where: { role_name: Constants.ROLES.USER },
-      });
-      if (!roleUser) {
-        roleUser = await Role.create({ role_name: Constants.ROLES.USER });
-      }
-    }
 
     // Mã hóa mật khẩu
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Tạo người dùng
+
     const user = await User.create({
       email,
       password: hashedPassword,
       user_name,
-    });
-
-    // Gán vai trò cho người dùng
-    await UserRole.create({
-      user_id: user.id,
-      role_id: roleUser.id,
+      role: roleUser,
     });
     const profile = await Profile.create({
       user_id: user.id,
@@ -201,11 +197,22 @@ export async function register(req, res) {
       email,
     });
 
+    if (role == Constants.ROLES.RECRUITER) {
+      const company = await Company.create({
+        address: address_company,
+        phone: phone,
+        name: name_company,
+      });
+      await CompanyUser.create({
+        company_id: company.id,
+        user_id: user.id,
+      });
+    }
+
     return res
       .status(Constants.STATUS_CODES.SUCCESS)
       .json({ status: 1, message: Constants.MESSAGES.SUCCESS });
   } catch (error) {
-    
     console.error(Constants.MESSAGES.REGISTRATION_ERROR, error);
     return res
       .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
@@ -234,7 +241,7 @@ export async function refresh(req, res) {
     const accessToken = jwt.sign(
       { id: decoded.id },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1800s" }
+      { expiresIn: process.env.ACCESS_TOKEN_SECRET }
     );
 
     res.json({ access_token: accessToken });
@@ -282,11 +289,10 @@ export async function getUser(req, res) {
   try {
     const user = req.user;
     return res.status(Constants.STATUS_CODES.SUCCESS).json(user);
-  } catch(e) {
+  } catch (e) {
     console.error(Constants.MESSAGES.GET_USER_ERROR, error);
     return res
       .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
       .json({ status: 0, message: Constants.MESSAGES.GET_USER_ERROR });
   }
-
 }
