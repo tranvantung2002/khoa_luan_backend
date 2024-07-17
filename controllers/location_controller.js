@@ -79,7 +79,7 @@ export async function deleteLocation(req, res) {
     if (!location) {
       return res.status(Constants.STATUS_CODES.NOT_FOUND).json({
         status: 0,
-        message: Constants.MESSAGES.NOT_FOUND,
+        message: Constants.MESSAGES.INVALID_FIELDS,
       });
     }
 

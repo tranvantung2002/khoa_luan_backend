@@ -62,7 +62,11 @@ class Constants {
       UPDATE_JOB_ERROR: "Could not update job",
       DELETE_JOB_ERROR: "Could not delete job",
       APPLY_JOB_BEFORE_ERROR: "You have already applied for this job.",
-      APPLY_JOB_ERROR: "Could not apply job"
+      APPLY_JOB_ERROR: "Could not apply job",
+      GET_CANDIDATE_BY_JOB_ERROR: "Could not get candidates by job",
+      UPDATE_JOB_APPLICATION_ERROR: "Could not update job application",
+      INVALID_STATUS: "Invalid status"
+
     };
   }
 

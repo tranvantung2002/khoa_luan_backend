@@ -51,6 +51,10 @@ const Job = sequelize.define('Job', {
   status: {
     type: DataTypes.ENUM('active', 'inactive'),
     defaultValue: 'active'
+  },
+  number_candidates: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   }
 }, {
   tableName: 'jobs',

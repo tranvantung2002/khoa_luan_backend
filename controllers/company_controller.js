@@ -107,7 +107,7 @@ export async function deleteCompany(req, res) {
     if (!company) {
       return res.status(Constants.STATUS_CODES.NOT_FOUND).json({
         status: 0,
-        message: Constants.MESSAGES.NOT_FOUND,
+        message: Constants.MESSAGES.INVALID_FIELDS,
       });
     }
 

@@ -1,6 +1,6 @@
 import Constants from "../utils/constants.js";
 import { Job, User, JobApplication } from "../models/index.js";
-
+import sequelize from "../config/db.js";
 export async function getAllJobs(req, res) {
   try {
     const { page = 1, size = 10 } = req.query;
@@ -17,10 +17,58 @@ export async function getAllJobs(req, res) {
     res.status(Constants.STATUS_CODES.SUCCESS).json({
       status: 1,
       message: Constants.MESSAGES.SUCCESS,
-      data: jobs.rows,
-      totalItems: jobs.count,
-      totalPages,
-      currentPage: parseInt(page),
+      data: {
+        jobs: jobs.rows,
+        totalItems: jobs.count,
+        totalPages: totalPages,
+        currentPage: parseInt(page),
+      },
+    });
+  } catch (error) {
+    console.error(Constants.MESSAGES.GET_JOB_ERROR, error);
+    return res
+      .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
+      .json({ status: 0, message: Constants.MESSAGES.GET_JOB_ERROR });
+  }
+}
+
+export async function getAllJobsByRecruiter(req, res) {
+  try {
+    const { page = 1, size = 10 } = req.query;
+    const limit = parseInt(size);
+    const offset = (page - 1) * limit;
+    const user = req.user;
+    if (
+      user.role != Constants.ROLES.ADMIN &&
+      user.role != Constants.ROLES.RECRUITER
+    ) {
+      return res.status(Constants.STATUS_CODES.UNAUTHORIZED_ERROR).json({
+        status: 0,
+        message: Constants.MESSAGES.GET_JOB_ERROR,
+      });
+    }
+
+    const query = `
+    SELECT jobs.*
+    FROM company_users
+    INNER JOIN jobs ON company_users.company_id = jobs.company_id
+    WHERE company_users.user_id = ${user.id}
+    LIMIT ${limit} OFFSET ${offset};
+  `;
+    sequelize.query(query).then((results) => {
+      const jobs = results[0];
+      const totalPages = Math.ceil(jobs.length / limit);
+
+      res.status(Constants.STATUS_CODES.SUCCESS).json({
+        status: 1,
+        message: Constants.MESSAGES.SUCCESS,
+        data: {
+          jobs: jobs,
+          totalItems: jobs.count,
+          totalPages: totalPages,
+          currentPage: parseInt(page),
+        },
+      });
     });
   } catch (error) {
     console.error(Constants.MESSAGES.GET_JOB_ERROR, error);
@@ -149,15 +197,14 @@ export async function applyForJob(req, res) {
   try {
     const { job_id, cover_letter, resume_url } = req.body;
     const user = req.user;
-    console.log(user)
-    if (!job_id ) {
+    console.log(user);
+    if (!job_id) {
       return res.status(Constants.STATUS_CODES.NOT_FOUND).json({
         status: 0,
-        message: Constants.MESSAGES.NOT_FOUND,
+        message: Constants.MESSAGES.INVALID_FIELDS,
       });
     }
     const job = await Job.findByPk(job_id);
-    
 
     if (!job) {
       return res
@@ -189,17 +236,78 @@ export async function applyForJob(req, res) {
       resume_url,
     });
 
-    res
-      .status(Constants.STATUS_CODES.SUCCESS)
-      .json({
-        status: 1,
-        message: Constants.MESSAGES.SUCCESS,
-        data: application,
-      });
+    res.status(Constants.STATUS_CODES.SUCCESS).json({
+      status: 1,
+      message: Constants.MESSAGES.SUCCESS,
+      data: application,
+    });
   } catch (error) {
     console.error(Constants.MESSAGES.APPLY_JOB_ERROR, error);
     return res
       .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
       .json({ status: 0, message: Constants.MESSAGES.APPLY_JOB_ERROR });
+  }
+}
+
+export async function getCandidateByJob(req, res) {
+  try {
+    const { job_id } = req.body;
+
+    if (!job_id) {
+      return res.status(Constants.STATUS_CODES.NOT_FOUND).json({
+        status: 0,
+        message: Constants.MESSAGES.INVALID_FIELDS,
+      });
+    }
+    const jobApplication = await JobApplication.findAll({ job_id });
+
+    res.status(Constants.STATUS_CODES.SUCCESS).json({
+      status: 1,
+      message: Constants.MESSAGES.SUCCESS,
+      data: jobApplication,
+    });
+  } catch (error) {
+    console.error(Constants.MESSAGES.GET_CANDIDATE_BY_JOB_ERROR, error);
+    return res.status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: 0,
+      message: Constants.MESSAGES.GET_CANDIDATE_BY_JOB_ERROR,
+    });
+  }
+}
+
+export async function updateJobApplication(req, res) {
+  try {
+    const { status, jobApplication_id } = req.body;
+
+    if (!status || !jobApplication_id) {
+      return res.status(Constants.STATUS_CODES.NOT_FOUND).json({
+        status: 0,
+        message: Constants.MESSAGES.INVALID_FIELDS,
+      });
+    }
+    const jobApplication = await JobApplication.findByPk(jobApplication_id);
+    if (
+      status == Constants.STATUS_JOB_APPLICATION.ACCEPT ||
+      status == Constants.STATUS_JOB_APPLICATION.ACCEPT ||
+      status == Constants.STATUS_JOB_APPLICATION.PENDING
+    ) {
+      jobApplication.status = status;
+      await jobApplication.save();
+      res.status(Constants.STATUS_CODES.SUCCESS).json({
+        status: 1,
+        message: Constants.MESSAGES.SUCCESS,
+        data: jobApplication,
+      });
+    }
+    res.status(Constants.STATUS_CODES.BAD_REQUEST).json({
+      status: 0,
+      message: Constants.MESSAGES.INVALID_STATUS,
+    });
+  } catch (error) {
+    console.error(Constants.MESSAGES.UPDATE_JOB_APPLICATION_ERROR, error);
+    return res.status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      status: 0,
+      message: Constants.MESSAGES.UPDATE_JOB_APPLICATION_ERROR,
+    });
   }
 }
