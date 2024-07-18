@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'khoaluanha',
-    script: 'index.js',
+    script: 'server.js',
     watch_delay: 1000,
     args: '--max-old-space-size=3072',
     node_args: '--max-old-space-size=3072',
