@@ -1,10 +1,10 @@
 import mysql from "mysql2/promise";
 import { Sequelize } from "sequelize";
 
-const sequelize = new Sequelize("findJob","root","1832003",{
-  host: "localhost",
+const sequelize = new Sequelize("findjob","root","Tung_2002@",{
+  host: "14.225.210.106",
   dialect: "mysql",
-  port: 3307,
+  port: 3306,
 
 })
 
