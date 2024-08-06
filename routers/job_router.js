@@ -21,4 +21,5 @@ router.post("/update-job", isRecruiter, updateJob);
 router.post("/apply-for-job", applyForJob);
 router.get("/get-jobs-byrecruiter", isRecruiter, getAllJobsByRecruiter);
 router.post("/update-job-application", isRecruiter, updateJobApplication);
+router.post("/get-candidate-by-job", getCandidateByJob)
 export default router;

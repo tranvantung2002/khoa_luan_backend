@@ -65,7 +65,9 @@ class Constants {
       APPLY_JOB_ERROR: "Could not apply job",
       GET_CANDIDATE_BY_JOB_ERROR: "Could not get candidates by job",
       UPDATE_JOB_APPLICATION_ERROR: "Could not update job application",
-      INVALID_STATUS: "Invalid status"
+      INVALID_STATUS: "Invalid status",
+      PROFILE_NOT_EXISTS: "Profile does not exist",
+      EMPTY_COMPANY_USER: "User does not own company"
 
     };
   }

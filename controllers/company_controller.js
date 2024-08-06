@@ -32,7 +32,7 @@ export async function getAllCompany(req, res) {
   try {
     const companies = await Company.findAll();
     res.json({
-      status: 0,
+      status: 1,
       message: Constants.MESSAGES.SUCCESS,
       data: companies,
     });
@@ -44,11 +44,70 @@ export async function getAllCompany(req, res) {
   }
 }
 
+export async function getCompanyByUser(req, res) {
+  try {
+    const { user_id } = req.body;
+    const user = await User.findByPk(user_id, {
+      include: Company,
+    });
+
+    if (user) {
+      res.json({
+        status: 1,
+        message: Constants.MESSAGES.SUCCESS,
+        data: user.Companies,
+      });
+    } else {
+      res
+        .status(Constants.STATUS_CODES.NOT_FOUND)
+        .json({ status: 1, message: Constants.MESSAGES.EMPTY_COMPANY_USER });
+    }
+  } catch (e) {
+    console.error(Constants.MESSAGES.GET_COMPANY_ERROR, error);
+    return res
+      .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
+      .json({ status: 0, message: Constants.MESSAGES.GET_COMPANY_ERROR });
+  }
+}
+
+// export async function createCompanyByUser(req, res) {
+//   try {
+//     const {
+//       email,
+//       phone,
+//       address_company,
+//       name_company,
+//     } = req.body;
+//     const user = req.user;
+//     if (!email ||  !phone || !address_company || !name_company) {
+//       return res.status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY).json({
+//         status: 0,
+//         message: Constants.MESSAGES.INVALID_FIELDS,
+//       });
+//     }
+//     if (user.role == Constants.ROLES.RECRUITER || user.role == Constants.ROLES.ADMIN) {
+//       return res.status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY).json({
+//         status: 0,
+//         message: Constants.MESSAGES.INVALID_FIELDS,
+//       });
+//     } else {
+//       return res
+//       .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
+//       .json({ status: 0, message: Constants.MESSAGES.GET_COMPANY_ERROR });
+//     }
+//   } catch (e) {
+//     console.error(Constants.MESSAGES.GET_COMPANY_ERROR, error);
+//     return res
+//       .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
+//       .json({ status: 0, message: Constants.MESSAGES.GET_COMPANY_ERROR });
+//   }
+// }
+
 export async function updateCompany(req, res) {
   try {
-    const { company_id, name, address, phone, image_url, email, code_tax } =
+    const { id, name, address, phone, image_url, email, code_tax } =
       req.body;
-    const company = await Company.findByPk(company_id);
+    const company = await Company.findByPk(id);
     if (name !== null && name !== undefined) company.name = name;
     if (address !== null && address !== undefined) company.address = address;
     if (phone !== null && phone !== undefined) company.phone = phone;
@@ -62,7 +121,7 @@ export async function updateCompany(req, res) {
       .status(Constants.STATUS_CODES.SUCCESS)
       .json({ status: 1, message: Constants.MESSAGES.SUCCESS });
   } catch (e) {
-    console.error(Constants.MESSAGES.UPDATE_COMPANY_ERROR, error);
+    console.error(Constants.MESSAGES.UPDATE_COMPANY_ERROR, e);
     return res
       .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
       .json({ status: 0, message: Constants.MESSAGES.UPDATE_COMPANY_ERROR });

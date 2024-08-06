@@ -89,6 +89,7 @@ export async function createJob(req, res) {
       industry_id,
       working_time,
       expires_at,
+      number_candidates,
     } = req.body;
 
     if (
@@ -98,7 +99,8 @@ export async function createJob(req, res) {
       !industry_id ||
       !expires_at ||
       !description ||
-      !salary
+      !salary ||
+      !number_candidates
     ) {
       return res
         .status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY)
@@ -114,6 +116,7 @@ export async function createJob(req, res) {
       industry_id,
       working_time,
       expires_at,
+      number_candidates,
     });
 
     res
@@ -138,6 +141,7 @@ export async function updateJob(req, res) {
       industry_id,
       working_time,
       expires_at,
+      number_candidates,
     } = req.body;
 
     const job = await Job.findByPk(job_id);
@@ -153,6 +157,8 @@ export async function updateJob(req, res) {
       job.working_time = working_time;
     if (expires_at !== null && expires_at !== undefined)
       job.expires_at = expires_at;
+    if (number_candidates !== null && number_candidates !== undefined)
+      job.number_candidates = number_candidates;
 
     await job.save();
 

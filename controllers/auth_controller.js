@@ -24,8 +24,8 @@ export async function registerAdmin(req, res) {
     // Kiểm tra xem người dùng đã tồn tại chưa
     const emailExists = await User.findOne({ where: { email } });
     if (emailExists) {
-      return res.status(409).json({
-        status: Constants.STATUS_CODES.CONFLICT,
+      return res.status(Constants.STATUS_CODES.CONFLICT).json({
+        status:0,
         message: Constants.MESSAGES.USER_EXISTS,
       });
     }
@@ -123,7 +123,7 @@ export async function login(req, res) {
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.json({
-      status: 0,
+      status: 1,
       message: Constants.MESSAGES.SUCCESS,
       data: {
         accessToken: accessToken,
@@ -173,8 +173,8 @@ export async function register(req, res) {
       where: { email: email, role: roleUser },
     });
     if (emailExists) {
-      return res.status(409).json({
-        status: Constants.STATUS_CODES.CONFLICT,
+      return res.status(Constants.STATUS_CODES.CONFLICT).json({
+        status: 0,
         message: Constants.MESSAGES.USER_EXISTS,
       });
     }
