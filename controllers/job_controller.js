@@ -3,9 +3,11 @@ import { Job, User, JobApplication } from "../models/index.js";
 import sequelize from "../config/db.js";
 export async function getAllJobs(req, res) {
   try {
-    const { page = 1, size = 10 } = req.query;
-    const limit = parseInt(size);
-    const offset = (page - 1) * limit;
+    const { page, size } = req.query;
+    const pageNumber = page || 1;
+    const pageSize = size || 10;
+    const limit = parseInt(pageSize);
+    const offset = (pageNumber - 1) * limit;
 
     const jobs = await Job.findAndCountAll({
       limit,
@@ -13,7 +15,6 @@ export async function getAllJobs(req, res) {
     });
 
     const totalPages = Math.ceil(jobs.count / limit);
-
     res.status(Constants.STATUS_CODES.SUCCESS).json({
       status: 1,
       message: Constants.MESSAGES.SUCCESS,
@@ -21,7 +22,7 @@ export async function getAllJobs(req, res) {
         jobs: jobs.rows,
         totalItems: jobs.count,
         totalPages: totalPages,
-        currentPage: parseInt(page),
+        currentPage: parseInt(pageNumber),
       },
     });
   } catch (error) {
@@ -34,41 +35,54 @@ export async function getAllJobs(req, res) {
 
 export async function getAllJobsByRecruiter(req, res) {
   try {
-    const { page = 1, size = 10 } = req.query;
-    const limit = parseInt(size);
-    const offset = (page - 1) * limit;
-    const user = req.user;
-    if (
-      user.role != Constants.ROLES.ADMIN &&
-      user.role != Constants.ROLES.RECRUITER
-    ) {
-      return res.status(Constants.STATUS_CODES.UNAUTHORIZED_ERROR).json({
+    const { user_id, page, size } = req.body;
+    const pageNumber = page || 1;
+    const pageSize = size || 10;
+    const limit = parseInt(pageSize);
+    const offset = (pageNumber - 1) * limit;
+
+    if (!user_id && Number.isInteger(user_id)) {
+      return res.status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY).json({
         status: 0,
-        message: Constants.MESSAGES.GET_JOB_ERROR,
+        message: Constants.MESSAGES.INVALID_FIELDS,
       });
     }
 
     const query = `
-    SELECT jobs.*
+  WITH job_count AS (
+    SELECT COUNT(*) AS count
     FROM company_users
     INNER JOIN jobs ON company_users.company_id = jobs.company_id
-    WHERE company_users.user_id = ${user.id}
-    LIMIT ${limit} OFFSET ${offset};
-  `;
-    sequelize.query(query).then((results) => {
-      const jobs = results[0];
-      const totalPages = Math.ceil(jobs.length / limit);
+    WHERE company_users.user_id = ${user_id}
+  )
+  SELECT jobs.*, job_count.count
+  FROM company_users
+  INNER JOIN jobs ON company_users.company_id = jobs.company_id
+  CROSS JOIN job_count
+  WHERE company_users.user_id = ${user_id}
+  LIMIT ${limit} OFFSET ${offset};
+`;
+    const results = await sequelize.query(query, {
+      type: sequelize.QueryTypes.SELECT,
+    });
 
-      res.status(Constants.STATUS_CODES.SUCCESS).json({
-        status: 1,
-        message: Constants.MESSAGES.SUCCESS,
-        data: {
-          jobs: jobs,
-          totalItems: jobs.count,
-          totalPages: totalPages,
-          currentPage: parseInt(page),
-        },
-      });
+    // Extract the count from the results
+    const totalItems = results.length > 0 ? results[0].count : 0;
+    const jobs = results.map((row) => {
+      const { count, ...job } = row; // Remove the count property from job results
+      return job;
+    });
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(Constants.STATUS_CODES.SUCCESS).json({
+      status: 1,
+      message: Constants.MESSAGES.SUCCESS,
+      data: {
+        jobs: jobs,
+        totalItems: totalItems,
+        totalPages: totalPages,
+        currentPage: parseInt(pageNumber),
+      },
     });
   } catch (error) {
     console.error(Constants.MESSAGES.GET_JOB_ERROR, error);
@@ -133,7 +147,7 @@ export async function createJob(req, res) {
 export async function updateJob(req, res) {
   try {
     const {
-      job_id,
+      id,
       title,
       description,
       location_id,
@@ -142,9 +156,16 @@ export async function updateJob(req, res) {
       working_time,
       expires_at,
       number_candidates,
+      status,
     } = req.body;
 
-    const job = await Job.findByPk(job_id);
+    const job = await Job.findByPk(id);
+    if (!job) {
+      return res.status(Constants.STATUS_CODES.NOT_FOUND).json({
+        status: 0,
+        message: Constants.MESSAGES.DATA_NOT_FOUND,
+      });
+    }
     if (title !== null && title !== undefined) job.title = title;
     if (description !== null && description !== undefined)
       job.description = description;
@@ -159,6 +180,13 @@ export async function updateJob(req, res) {
       job.expires_at = expires_at;
     if (number_candidates !== null && number_candidates !== undefined)
       job.number_candidates = number_candidates;
+    if (status !== null && status !== undefined) {
+      const normalizedStatus = status.trim().toLowerCase();
+
+      if (normalizedStatus === "active" || normalizedStatus === "inactive") {
+        job.status = normalizedStatus;
+      }
+    }
 
     await job.save();
 
@@ -201,7 +229,7 @@ export async function deleteJob(req, res) {
 
 export async function applyForJob(req, res) {
   try {
-    const { job_id, cover_letter, resume_url } = req.body;
+    const { job_id, cover_letter, resume_url,email_candidate } = req.body;
     const user = req.user;
     console.log(user);
     if (!job_id) {
@@ -216,6 +244,11 @@ export async function applyForJob(req, res) {
       return res
         .status(Constants.STATUS_CODES.NOT_FOUND)
         .json({ status: 0, message: Constants.MESSAGES.GET_JOB_ERROR });
+    }
+    if (job.status != Constants.STATUS_JOB.ACTIVE) {
+      return res
+        .status(Constants.STATUS_CODES.NOT_FOUND)
+        .json({ status: 0, message: Constants.MESSAGES.JOB_NOT_ACTIVE });
     }
 
     if (!user) {
@@ -240,7 +273,10 @@ export async function applyForJob(req, res) {
       user_id: user.id,
       cover_letter,
       resume_url,
+      email_candidate
     });
+    job.number_applied++;
+    await job.save();
 
     res.status(Constants.STATUS_CODES.SUCCESS).json({
       status: 1,
@@ -265,7 +301,9 @@ export async function getCandidateByJob(req, res) {
         message: Constants.MESSAGES.INVALID_FIELDS,
       });
     }
-    const jobApplication = await JobApplication.findAll({ job_id });
+    const jobApplication = await JobApplication.findAll({
+      where: { job_id: job_id },
+    });
 
     res.status(Constants.STATUS_CODES.SUCCESS).json({
       status: 1,
@@ -304,11 +342,12 @@ export async function updateJobApplication(req, res) {
         message: Constants.MESSAGES.SUCCESS,
         data: jobApplication,
       });
+    } else {
+      res.status(Constants.STATUS_CODES.BAD_REQUEST).json({
+        status: 0,
+        message: Constants.MESSAGES.INVALID_STATUS,
+      });
     }
-    res.status(Constants.STATUS_CODES.BAD_REQUEST).json({
-      status: 0,
-      message: Constants.MESSAGES.INVALID_STATUS,
-    });
   } catch (error) {
     console.error(Constants.MESSAGES.UPDATE_JOB_APPLICATION_ERROR, error);
     return res.status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR).json({

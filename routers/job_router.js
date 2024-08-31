@@ -15,11 +15,11 @@ import {
 
 router.get("/get-all-jobs", getAllJobs);
 router.post("/create-job", isRecruiter, createJob);
-router.delete("/delete-job", isRecruiter, deleteJob);
+router.post("/delete-job", isRecruiter, deleteJob);
 router.post("/update-job", isRecruiter, updateJob);
 
 router.post("/apply-for-job", applyForJob);
-router.get("/get-jobs-byrecruiter", isRecruiter, getAllJobsByRecruiter);
+router.post("/get-jobs-byrecruiter", getAllJobsByRecruiter);
 router.post("/update-job-application", isRecruiter, updateJobApplication);
 router.post("/get-candidate-by-job", getCandidateByJob)
 export default router;

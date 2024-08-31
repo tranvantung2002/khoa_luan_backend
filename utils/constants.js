@@ -26,6 +26,12 @@ class Constants {
       REJECT: "rejected",
     };
   }
+  static get STATUS_JOB() {
+    return {
+      ACTIVE: "active",
+      INACTIVE: "inactive",
+    };
+  }
 
   static get MESSAGES() {
     return {
@@ -67,8 +73,11 @@ class Constants {
       UPDATE_JOB_APPLICATION_ERROR: "Could not update job application",
       INVALID_STATUS: "Invalid status",
       PROFILE_NOT_EXISTS: "Profile does not exist",
-      EMPTY_COMPANY_USER: "User does not own company"
-
+      EMPTY_COMPANY_USER: "User does not own company",
+      UPDATE_PROFILE_ERROR: "Could not update porifle",
+      JOB_NOT_ACTIVE: "Job is not active",
+      UPLOAD_FILE_ERROR: "Could not upload file",
+      UPLOAD_FILE_SUCCESS: "Image uploaded successfully"
     };
   }
 

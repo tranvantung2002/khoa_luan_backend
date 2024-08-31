@@ -3,6 +3,7 @@ import sequelize from "../config/db.js";
 import Company from './company.js'; 
 import Location from './location.js'; 
 import Industry from './industry.js'; 
+import Constants from "../utils/constants.js";
 
 const Job = sequelize.define('Job', {
   id: {
@@ -49,10 +50,14 @@ const Job = sequelize.define('Job', {
     type: DataTypes.DATE
   },
   status: {
-    type: DataTypes.ENUM('active', 'inactive'),
-    defaultValue: 'active'
+    type: DataTypes.ENUM(Constants.STATUS_JOB.ACTIVE, Constants.STATUS_JOB.INACTIVE),
+    defaultValue: Constants.STATUS_JOB.ACTIVE
   },
   number_candidates: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  number_applied: {
     type: DataTypes.INTEGER,
     defaultValue: 0
   }

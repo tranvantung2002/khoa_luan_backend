@@ -7,14 +7,14 @@ import {
   updateCompany,
   createCompany,
   deleteCompany,
-  getCompanyByUser,
+  getCompany,
 } from "../controllers/company_controller.js";
 
 router.get("/get-all-companies", getAllCompany);
-router.post("/get-company-by-user", getCompanyByUser);
+router.post("/get-company", getCompany);
 router.post("/verify-company", isAdmin, verifyCompany);
 router.post("/create-company", isRecruiter, createCompany);
-router.delete("/delete-company", isRecruiter, deleteCompany);
+router.post("/delete-company", isRecruiter, deleteCompany);
 router.post("/update-company", isRecruiter, updateCompany);
 
 export default router;

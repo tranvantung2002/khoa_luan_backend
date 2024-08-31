@@ -40,6 +40,10 @@ const JobApplication = sequelize.define('JobApplication', {
   resume_url: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  email_candidate: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   tableName: 'job_applications',

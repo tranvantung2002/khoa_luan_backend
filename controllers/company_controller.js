@@ -1,5 +1,12 @@
 import Constants from "../utils/constants.js";
-import { Role, UserRole, User, Profile, Company } from "../models/index.js";
+import {
+  Role,
+  UserRole,
+  User,
+  Profile,
+  Company,
+  CompanyUser,
+} from "../models/index.js";
 
 export async function verifyCompany(req, res) {
   try {
@@ -44,23 +51,37 @@ export async function getAllCompany(req, res) {
   }
 }
 
-export async function getCompanyByUser(req, res) {
+export async function getCompany(req, res) {
   try {
-    const { user_id } = req.body;
-    const user = await User.findByPk(user_id, {
-      include: Company,
-    });
+    const { user_id, company_id } = req.body;
+    if (!user_id && !company_id) {
+      return res
+        .status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY)
+        .json({ status: 0, message: Constants.MESSAGES.INVALID_FIELDS });
+    }
+    if (user_id) {
+      const user = await User.findByPk(user_id, {
+        include: Company,
+      });
 
-    if (user) {
+      if (user) {
+        res.json({
+          status: 1,
+          message: Constants.MESSAGES.SUCCESS,
+          data: user.Companies,
+        });
+      } else {
+        res
+          .status(Constants.STATUS_CODES.NOT_FOUND)
+          .json({ status: 1, message: Constants.MESSAGES.EMPTY_COMPANY_USER });
+      }
+    } else {
+      const company = await Company.findByPk(company_id);
       res.json({
         status: 1,
         message: Constants.MESSAGES.SUCCESS,
-        data: user.Companies,
+        data: company,
       });
-    } else {
-      res
-        .status(Constants.STATUS_CODES.NOT_FOUND)
-        .json({ status: 1, message: Constants.MESSAGES.EMPTY_COMPANY_USER });
     }
   } catch (e) {
     console.error(Constants.MESSAGES.GET_COMPANY_ERROR, error);
@@ -105,8 +126,7 @@ export async function getCompanyByUser(req, res) {
 
 export async function updateCompany(req, res) {
   try {
-    const { id, name, address, phone, image_url, email, code_tax } =
-      req.body;
+    const { id, name, address, phone, image_url, email, code_tax } = req.body;
     const company = await Company.findByPk(id);
     if (name !== null && name !== undefined) company.name = name;
     if (address !== null && address !== undefined) company.address = address;
@@ -131,7 +151,7 @@ export async function updateCompany(req, res) {
 export async function createCompany(req, res) {
   try {
     const { name, address, phone, image_url, email, code_tax } = req.body;
-
+    const user = req.user;
     if (!name || !email) {
       return res
         .status(Constants.STATUS_CODES.UNPROCESSABLE_ENTITY)
@@ -145,6 +165,10 @@ export async function createCompany(req, res) {
       image_url: image_url || null,
       email,
       code_tax: code_tax || null,
+    });
+    await CompanyUser.create({
+      company_id: company.id,
+      user_id: user.id,
     });
 
     res
