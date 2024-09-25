@@ -1,9 +1,6 @@
 import Constants from "../utils/constants.js";
 import {
-  Role,
-  UserRole,
   User,
-  Profile,
   Company,
   CompanyUser,
 } from "../models/index.js";

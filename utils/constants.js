@@ -74,10 +74,14 @@ class Constants {
       INVALID_STATUS: "Invalid status",
       PROFILE_NOT_EXISTS: "Profile does not exist",
       EMPTY_COMPANY_USER: "User does not own company",
-      UPDATE_PROFILE_ERROR: "Could not update porifle",
+      UPDATE_PROFILE_ERROR: "Could not update profile",
       JOB_NOT_ACTIVE: "Job is not active",
       UPLOAD_FILE_ERROR: "Could not upload file",
-      UPLOAD_FILE_SUCCESS: "Image uploaded successfully"
+      UPLOAD_FILE_SUCCESS: "Image uploaded successfully",
+      GET_RESUME_ERROR: "Could not get resumes",
+      UPDATE_RESUME_ERROR: "Could not update resume",
+      DELETE_RESUME_ERROR: "Could not delete resume",
+      NOT_PERMISSION: "User does not have permission"
     };
   }
 

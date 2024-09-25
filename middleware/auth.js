@@ -1,5 +1,5 @@
 import Constants from "../utils/constants.js";
-import { Role, UserRole, User, Profile } from "../models/index.js";
+import { User } from "../models/index.js";
 import jwt from "jsonwebtoken";
 export function auth(req, res, next) {
   if (req.user?.id) return next();
@@ -23,7 +23,7 @@ export function authentication(req, res, next) {
         });
         if (user) {
           req.user = user.get({ plain: true });
-        } 
+        }
         // else {
         //   req.user = {};
         // }

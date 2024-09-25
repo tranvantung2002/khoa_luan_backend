@@ -1,6 +1,6 @@
 import express  from 'express'
 const router = express.Router()
-import {registerAdmin, login, register, logout, getUser, refresh} from '../controllers/auth_controller.js'
+import {registerAdmin, login, register, logout, refresh} from '../controllers/auth_controller.js'
 import {auth} from '../middleware/auth.js'
 router.post('/registerAdmin', registerAdmin)
 router.post('/register', register)
@@ -11,7 +11,7 @@ router.post('/logout', logout)
 
 router.post('/refresh', refresh)
 
-router.get('/user', auth ,  getUser)
+
 
 
 

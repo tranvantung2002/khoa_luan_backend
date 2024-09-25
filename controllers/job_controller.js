@@ -1,5 +1,5 @@
 import Constants from "../utils/constants.js";
-import { Job, User, JobApplication } from "../models/index.js";
+import { Job, User, JobApplication, Resume } from "../models/index.js";
 import sequelize from "../config/db.js";
 export async function getAllJobs(req, res) {
   try {
@@ -229,7 +229,7 @@ export async function deleteJob(req, res) {
 
 export async function applyForJob(req, res) {
   try {
-    const { job_id, cover_letter, resume_url,email_candidate } = req.body;
+    const { job_id, cover_letter, resume_url, email_candidate } = req.body;
     const user = req.user;
     console.log(user);
     if (!job_id) {
@@ -273,11 +273,11 @@ export async function applyForJob(req, res) {
       user_id: user.id,
       cover_letter,
       resume_url,
-      email_candidate
+      email_candidate,
     });
     job.number_applied++;
     await job.save();
-
+    
     res.status(Constants.STATUS_CODES.SUCCESS).json({
       status: 1,
       message: Constants.MESSAGES.SUCCESS,

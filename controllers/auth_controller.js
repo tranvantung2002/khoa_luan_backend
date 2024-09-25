@@ -1,11 +1,4 @@
-import {
-  Role,
-  UserRole,
-  User,
-  Profile,
-  Company,
-  CompanyUser,
-} from "../models/index.js";
+import { User, Company, CompanyUser } from "../models/index.js";
 import bcrypt from "bcrypt";
 import Constants from "../utils/constants.js";
 import jwt from "jsonwebtoken";
@@ -25,7 +18,7 @@ export async function registerAdmin(req, res) {
     const emailExists = await User.findOne({ where: { email } });
     if (emailExists) {
       return res.status(Constants.STATUS_CODES.CONFLICT).json({
-        status:0,
+        status: 0,
         message: Constants.MESSAGES.USER_EXISTS,
       });
     }
@@ -39,13 +32,7 @@ export async function registerAdmin(req, res) {
       password: hashedPassword,
       user_name,
       role: Constants.ROLES.ADMIN,
-    });
-
-    const profile = await Profile.create({
-      user_id: user.id,
-      user_name,
       phone,
-      email,
     });
 
     return res
@@ -126,7 +113,7 @@ export async function login(req, res) {
       status: 1,
       message: Constants.MESSAGES.SUCCESS,
       data: {
-        accessToken: accessToken,
+        accessToken: accessToken,  
         user: userJson,
       },
     });
@@ -189,12 +176,7 @@ export async function register(req, res) {
       password: hashedPassword,
       user_name,
       role: roleUser,
-    });
-    const profile = await Profile.create({
-      user_id: user.id,
-      user_name,
       phone,
-      email,
     });
 
     if (role == Constants.ROLES.RECRUITER) {
@@ -282,17 +264,5 @@ export async function logout(req, res) {
     res
       .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
       .json({ message: Constants.MESSAGES.EXTERNAL_SERVER_ERROR });
-  }
-}
-
-export async function getUser(req, res) {
-  try {
-    const user = req.user;
-    return res.status(Constants.STATUS_CODES.SUCCESS).json(user);
-  } catch (e) {
-    console.error(Constants.MESSAGES.GET_USER_ERROR, error);
-    return res
-      .status(Constants.STATUS_CODES.INTERNAL_SERVER_ERROR)
-      .json({ status: 0, message: Constants.MESSAGES.GET_USER_ERROR });
   }
 }
