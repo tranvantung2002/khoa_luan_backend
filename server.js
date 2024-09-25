@@ -41,13 +41,13 @@ app.get("/test", (req, res) => {
 app.use(authentication);
 
 // ROUTER
-app.use("/api/auth", routerAuth);
-app.use("/api/company", routerCompany);
-app.use("/api/location", routerLocation);
-app.use("/api/industry", routerIndustry);
-app.use("/api/job", routerJob);
-app.use("/api/user", routerUser);
-app.use("/api", routerUpload);
+app.use("/api/khoaluan/auth", routerAuth);
+app.use("/api/khoaluan/company", routerCompany);
+app.use("/api/khoaluan/location", routerLocation);
+app.use("/api/khoaluan/industry", routerIndustry);
+app.use("/api/khoaluan/job", routerJob);
+app.use("/api/khoaluan/user", routerUser);
+app.use("/api/khoaluan", routerUpload);
 
 const PORT = process.env.PORT || 8080;
 
