@@ -50,7 +50,12 @@ app.use("/api/khoaluan/user", routerUser);
 app.use("/api/khoaluan", routerUpload);
 
 const PORT = process.env.PORT || 8080;
-
+app.listen(PORT, () => {
+  console.log("SERVER CORE DICTIONARY RUNNING PORT: " + PORT);
+  String.prototype.clearSpace = function () {
+    return this.trim().replace(/\n+/g, '\n');
+  };
+});
 // MY SQL
 sequelize
   .authenticate()
